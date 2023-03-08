@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Incremental</title>
     <link rel="icon" href="./favicon.ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <link rel="stylesheet" href="styles.css" />
     <script src="mainscript.js"></script>
     <style>
@@ -16,4 +17,31 @@
 </head>
 <body onload="generateMain()">
     <header>Welcome to Puppies Game <br />A Kittens Game Inspired Incremental</header>
+    <div>
+        <div id="resourceDisplay">
+            <header>Resources</header>
+            <table>
+                <tbody>
+                    <tr><th>Dog Food</th><th id="dogFoodDisplay"></th></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="nextTo">
+            <nav id="mainButtonNav">
+                <input class="navButton" type="button" value="Camp" onclick="showCamp()" />
+                <input class="navButton" type="button" value="Story" onclick="showStory()" />
+                <input class="navButton" type="button" value="Settings" onclick="showSettings()" />
+            </nav>
+            <div id="campWindow">
+                <p>Test</p>
+            </div>
+            <div id="settingsWindow">
+                <input type="button" value="Reset Game" onclick="resetGame()" />
+            </div>
+            <div id="storyWindow">
+                <textarea id="storyBox"></textarea>
+            </div>
+        </div>
+    </div>
+   
 </body>

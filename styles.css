@@ -1,6 +1,46 @@
+.nextTo {
+    width:30%;
+    display: inline-block;
+}
+
 header {
-    height: 70px;
-    text-indent: 20px;
     font-size: 20px;
     text-align: center;
+}
+
+
+#resourceDisplay {
+    display: inline-block;
+    width: 20%;
+    min-width: 200px;
+    border: 1px solid grey;
+    vertical-align: top;
+}
+
+
+#test2 {
+    display: table;
+}
+
+.parent {
+
+}
+
+table {
+    border: none;
+}
+
+.navButton {
+    font-size: 18px;
+}
+
+#mainButtonNav {
+    border: 1px solid black;
+}
+
+#storyBox {
+    overflow-y: scroll;
+    resize: none;
+    width: 100%;
+    height: 60%;
 }
