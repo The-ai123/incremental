@@ -6,6 +6,8 @@ var productionSecond = new Map();
 var tick = 0;
 var ResourceMultipliers = new Map();
 var jobProduction = new Map();
+var varNametoDisplayName = new Map();
+var jobMultipliers = new Map();
 
 //On load function
 function generateMain() {
@@ -29,60 +31,56 @@ function initNewGameVar() {
         ["storyWindow", document.getElementById("storyWindow")],
         ["settingsWindow", document.getElementById("settingsWindow")],
         ["cityWindow", document.getElementById("cityWindow")],
+        ["storyNav", document.getElementById("storyNav")],
         //story
         ["storyBox", document.getElementById("storyBox")],
         //city
         ["cityScavengeLabel", document.getElementById("cityScavengeLabel")],
+        ["cityScavengeArea", document.getElementById("cityScavengeArea")],
         //resource display
         ["dogFoodDisplay", document.getElementById("dogFoodDisplay")],
         ["puppiesDisplay", document.getElementById("puppiesDisplay")],
     ]);
 
-    resources.set("dogFood", 0);
+    resources.set("dogFood", 50);
     resources.set("puppies", 1);
 
     jobs.set("cityScavenge", 0);
     jobs.set("unemployed", 1);
+    jobs.set("puppies", 1);
 
     jobProduction.set("cityScavenge", new Map());
-    jobProduction.get("cityScavenge").set("dogFood")
+    jobProduction.get("cityScavenge").set("dogFood", .05);
+    jobProduction.set("puppies", new Map());
+    jobProduction.get("puppies").set("dogFood", -.01);
+
+    jobMultipliers.set("cityScavenge", new Map());
+
 
     production.set("dogFood", new Map());
+
+    varNametoDisplayName.set("dogFood", "Dog Food");
 }
 
-//update resource display
-function displayResources() {
-    elements.get("dogFoodDisplay").textContent = round(resources.get("dogFood"), 2);   
-    elements.get("puppiesDisplay").textContent = round(jobs.get("unemployed"), 0) + "/" + round(resources.get("puppies"), 0);
 
-
-}
-
-function round(value, decimal) {
-    return Math.floor(value * Math.pow(10, decimal)) / Math.pow(10, decimal);
-}
-
-function displayProduction() {
-    elements.get("dogFoodDisplay").title = productionString("dogFood",3);
-}
-
-function productionString(resource, decimals) {
-    const value = productionSecond.get(resource);
-    console.log(value);
-    console.log(round(value, decimals))
-    if (round(value, decimals) != value) {
-        return "+" + round(value, decimals) + ".../s";
-    } else {
-        return "+" + round(value, decimals) + "/s";
-    }
-}
 
 function gameTick() {
 
     //current order is jobs>jobproduction>jobmultipliers>resources>multipliers
     //job production
-    for (let [key, value] of jobProduction) {
-
+    //for every job, multiply it's production by amount of workers
+    for (let [job, valuemap] of jobProduction) {
+        //create job multiplier
+        let multi = 1;
+        if (jobMultipliers.has(job)) {
+            for (let [source, multiplier] of jobMultipliers.get(job)) {
+                multi = multi * multiplier;
+            }
+        }     
+        //add to production
+        for (let [resource, value] of valuemap) {
+            setProduction(resource, job, jobs.get(job) * value * multi);
+        }
     }
 
     //for every resource in production
@@ -104,6 +102,51 @@ function gameTick() {
     tick++;
 }
 
+//update resource display
+function displayResources() {
+    elements.get("dogFoodDisplay").textContent = round(resources.get("dogFood"), 2);
+    elements.get("puppiesDisplay").textContent = round(jobs.get("unemployed"), 0) + "/" + round(resources.get("puppies"), 0);
+
+
+}
+
+//round to a certain decimal place
+function round(value, decimal) {
+    return Math.floor(value * Math.pow(10, decimal)) / Math.pow(10, decimal);
+}
+
+//update production tooltips
+function displayProduction() {
+    elements.get("dogFoodDisplay").title = productionString("dogFood", 3);
+    elements.get("cityScavengeArea").title = jobProductionString("cityScavenge");
+}
+
+//generate string for job production tooltip
+function jobProductionString(jobName) {
+    let string = ""
+    for (let [resource, value] of jobProduction.get(jobName)) {
+        string += value + " " + varNametoDisplayName.get(resource) + "/sec\n";
+    }
+    return string;
+}
+
+//generate string for the production tooltip
+function productionString(resource, decimals) {
+    let value = productionSecond.get(resource);
+    let prefix = "";
+    if (value > 0) {
+        prefix = "+"
+    } else {
+        prefix = "-"
+        value = -value;
+    }
+    if (round(value, decimals) == 0 && value != 0) {
+        return prefix + round(value, decimals) + ".../s";
+    } else {
+        return prefix + round(value, decimals) + "/s";
+    }
+}
+
 //show camp tab
 function showCamp() {
     hideWindows();
@@ -120,6 +163,7 @@ function showSettings() {
 function showStory() {
     hideWindows();
     elements.get("storyWindow").hidden = false;
+    elements.get("storyNav").value = "Story";
 }
 
 //show city tab
@@ -163,7 +207,10 @@ function changeJobs(name, amount) {
 
 //Write text in the story box
 function addLog(text) {
-    elements.get("storyBox").textContent = elements.get("storyBox").textContent + "> " + text +  " \n";
+    elements.get("storyBox").textContent = elements.get("storyBox").textContent + "> " + text + " \n";
+    if (elements.get("storyWindow").hidden == true) {
+        elements.get("storyNav").value = "Story(!)";
+    }
 }
 
 //change the amount of people scavenging

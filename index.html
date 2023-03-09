@@ -30,16 +30,16 @@
         </div>
         <div class="nextTo">
             <nav id="mainButtonNav">
-                <input class="navButton" type="button" value="Camp" onclick="showCamp()" />
+                <input class="navButton" type="button" value="Camp" onclick="showCamp()"/>
                 <input class="navButton" type="button" value="City" onclick="showCity()" />
-                <input class="navButton" type="button" value="Story" onclick="showStory()" />
+                <input class="navButton" type="button" value="Story" onclick="showStory()" id="storyNav"/>
                 <input class="navButton" type="button" value="Settings" onclick="showSettings()" />
             </nav>
             <div id="campWindow">
                 <p>Test</p>
             </div>
             <div id="cityWindow">
-                <div class="incrementArea" title=".01 Dog Food/Second">
+                <div class="incrementArea" id="cityScavengeArea">
                     <div class="incrementLabel" id="cityScavengeLabel">Scavenge (0)</div>
                     <input class="incrementButton" type="button" value="-" onclick="changeCityScavenge(-1)" />
                     <input class="incrementButton" type="button" value="+" onclick="changeCityScavenge(1)" />
