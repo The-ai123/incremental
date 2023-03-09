@@ -8,6 +8,7 @@ var ResourceMultipliers = new Map();
 var jobProduction = new Map();
 var varNametoDisplayName = new Map();
 var jobMultipliers = new Map();
+var storyFlags = new Map();
 
 //On load function
 function generateMain() {
@@ -20,7 +21,7 @@ function newGame() {
     initNewGameVar();
     displayResources(resources);
     showStory();
-    addLog("A puppy leaves the noisy and polluted city and sets up a camp away from the city for puppies to go. First they must scavenge for food.")
+    addLog("A rabbit leaves the noisy and polluted city and sets up a camp away from the city. First they must scavenge for food.")
 }
 
 //reset variables
@@ -37,29 +38,39 @@ function initNewGameVar() {
         //city
         ["cityScavengeLabel", document.getElementById("cityScavengeLabel")],
         ["cityScavengeArea", document.getElementById("cityScavengeArea")],
+        ["cityRecruitLabel", document.getElementById("cityRecruitLabel")],
+        ["cityRecruitArea", document.getElementById("cityRecruitArea")],
         //resource display
-        ["dogFoodDisplay", document.getElementById("dogFoodDisplay")],
-        ["puppiesDisplay", document.getElementById("puppiesDisplay")],
+        ["foodDisplay", document.getElementById("foodDisplay")],
+        ["rabbitsDisplay", document.getElementById("rabbitsDisplay")],
     ]);
 
-    resources.set("dogFood", 50);
-    resources.set("puppies", 1);
-
-    jobs.set("cityScavenge", 0);
+    resources.set("food", 50);
+    resources.set("rabbits", 1);
+   
     jobs.set("unemployed", 1);
-    jobs.set("puppies", 1);
+    jobs.set("rabbits", 1);
+    jobs.set("cityScavenge", 0);
+    jobs.set("cityRecruit", 0);
 
-    jobProduction.set("cityScavenge", new Map());
-    jobProduction.get("cityScavenge").set("dogFood", .05);
-    jobProduction.set("puppies", new Map());
-    jobProduction.get("puppies").set("dogFood", -.01);
+    jobProduction.set("cityScavenge", new Map([["food", .05]]));
+    jobProduction.set("rabbits", new Map([["food", -.01]]));
+    jobProduction.set("cityRecruit", new Map([["rabbits", .1]]));
 
     jobMultipliers.set("cityScavenge", new Map());
 
 
-    production.set("dogFood", new Map());
+    production.set("food", new Map());
+    production.set("rabbits", new Map());
 
-    varNametoDisplayName.set("dogFood", "Dog Food");
+    //resource real names
+    varNametoDisplayName.set("food", "Food");
+
+    //job real names
+    varNametoDisplayName.set("cityScavenge", "Scavenge");
+    varNametoDisplayName.set("cityRecruit", "Recruit");
+
+    storyFlags.set("recruit", false);
 }
 
 
@@ -99,13 +110,33 @@ function gameTick() {
     if (tick % 10 == 0) {
         displayProduction();   
     }
+    //update rabbits and unemployment
+    jobs.set("rabbits", round(resources.get("rabbits"), 0))
+    let sum = 0;
+    for (let [job, value] of jobs) {
+        if (job != "rabbits" && job != "unemployed") {
+            sum += value;
+        }
+    }
+    jobs.set("unemployed", jobs.get("rabbits") - sum);
+
+    storyChecks();
     tick++;
 }
 
+function storyChecks() {
+    if (storyFlags.get("recruit") == false && resources.get("food") > 50) {
+        storyFlags.set("recruit", true);
+        elements.get("cityRecruitArea").style.display = "inline-block";
+        addLog("Maybe more rabbits will join if there is more food...")
+    }
+}
+
+
 //update resource display
 function displayResources() {
-    elements.get("dogFoodDisplay").textContent = round(resources.get("dogFood"), 2);
-    elements.get("puppiesDisplay").textContent = round(jobs.get("unemployed"), 0) + "/" + round(resources.get("puppies"), 0);
+    elements.get("foodDisplay").textContent = round(resources.get("food"), 2);
+    elements.get("rabbitsDisplay").textContent = round(jobs.get("unemployed"), 0) + "/" + round(resources.get("rabbits"), 0);
 
 
 }
@@ -117,7 +148,7 @@ function round(value, decimal) {
 
 //update production tooltips
 function displayProduction() {
-    elements.get("dogFoodDisplay").title = productionString("dogFood", 3);
+    elements.get("foodDisplay").title = productionString("food", 3);
     elements.get("cityScavengeArea").title = jobProductionString("cityScavenge");
 }
 
@@ -219,8 +250,15 @@ function changeCityScavenge(amount) {
         changeJobs("cityScavenge", amount);
         changeJobs("unemployed", -amount );
         elements.get("cityScavengeLabel").textContent = "Scavenge (" + jobs.get("cityScavenge") + ")";
-        setProduction("dogFood", "cityScavenge", jobs.get("cityScavenge")*.01);
     }   
+}
+
+function incrementJobs(job, amount) {
+    if (jobs.get(job) >= -1 * amount && jobs.get("unemployed") >= amount) {
+        changeJobs(job, amount);
+        changeJobs("unemployed", -amount);
+        elements.get(job + "Label").textContent = varNametoDisplayName.get(job) + " (" + jobs.get(job) + ")";
+    }
 }
 
 function setProduction(resource, source, amount, increment) {

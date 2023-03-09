@@ -16,15 +16,15 @@
 
 </head>
 <body onload="generateMain()">
-    <header>Welcome to Puppies Game <br />A Kittens Game Inspired Incremental</header>
+    <header>Welcome to Rabbits Game <br />A Kittens Game Inspired Incremental</header>
     <div class="toolTip">test<span class="toolTipText">text</span></div>
     <div>
         <div id="resourceDisplay">
             <header>Resources</header>
             <table border="0">
                 <tbody>
-                    <tr><td>Dog Food</td><td id="dogFoodDisplay"></td></tr>
-                    <tr><td>Puppies</td><td id="puppiesDisplay"></td></tr>
+                    <tr><td>Food</td><td id="foodDisplay"></td></tr>
+                    <tr><td>Rabbits</td><td id="rabbitsDisplay"></td></tr>
                 </tbody>
             </table>
         </div>
@@ -41,11 +41,13 @@
             <div id="cityWindow">
                 <div class="incrementArea" id="cityScavengeArea">
                     <div class="incrementLabel" id="cityScavengeLabel">Scavenge (0)</div>
-                    <input class="incrementButton" type="button" value="-" onclick="changeCityScavenge(-1)" />
-                    <input class="incrementButton" type="button" value="+" onclick="changeCityScavenge(1)" />
+                    <input class="incrementButton" type="button" value="-" onclick="incrementJobs('cityScavenge',-1)" />
+                    <input class="incrementButton" type="button" value="+" onclick="incrementJobs('cityScavenge',1)" />
                 </div>
-                <div class="incrementArea">
-                    <input type="button" value="Reset Game" onclick="resetGame()" />
+                <div  class="incrementArea" id="cityRecruitArea" style="display: none;">
+                    <div class="incrementLabel" id="cityRecruitLabel" >Recruit (0)</div>
+                    <input class="incrementButton" type="button" value="-" onclick="incrementJobs('cityRecruit',-1)" />
+                    <input class="incrementButton" type="button" value="+" onclick="incrementJobs('cityRecruit',1)" />
                 </div>
             </div>
             <div id="settingsWindow">
