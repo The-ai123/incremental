@@ -20,20 +20,32 @@
     <div>
         <div id="resourceDisplay">
             <header>Resources</header>
-            <table>
+            <table border="0">
                 <tbody>
-                    <tr><th>Dog Food</th><th id="dogFoodDisplay"></th></tr>
+                    <tr><td>Dog Food</td><td id="dogFoodDisplay"></td></tr>
+                    <tr><td>Puppies</td><td id="puppiesDisplay"></td></tr>
                 </tbody>
             </table>
         </div>
         <div class="nextTo">
             <nav id="mainButtonNav">
                 <input class="navButton" type="button" value="Camp" onclick="showCamp()" />
+                <input class="navButton" type="button" value="City" onclick="showCity()" />
                 <input class="navButton" type="button" value="Story" onclick="showStory()" />
                 <input class="navButton" type="button" value="Settings" onclick="showSettings()" />
             </nav>
             <div id="campWindow">
                 <p>Test</p>
+            </div>
+            <div id="cityWindow">
+                <div class="incrementArea">
+                    <div class="incrementLabel" id="cityScavengeLabel">Scavenge (0)</div>
+                    <input class="incrementButton" type="button" value="-" onclick="changeCityScavenge(-1)" />
+                    <input class="incrementButton" type="button" value="+" onclick="changeCityScavenge(1)" />
+                </div>
+                <div class="incrementArea">
+                    <input type="button" value="Reset Game" onclick="resetGame()" />
+                </div>
             </div>
             <div id="settingsWindow">
                 <input type="button" value="Reset Game" onclick="resetGame()" />
@@ -41,6 +53,7 @@
             <div id="storyWindow">
                 <textarea id="storyBox"></textarea>
             </div>
+
         </div>
     </div>
    
