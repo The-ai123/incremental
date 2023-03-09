@@ -4,11 +4,14 @@ var elements = new Map();
 var production = new Map();
 var productionSecond = new Map();
 var tick = 0;
-var ResourceMultipliers = new Map();
+var resourceMultipliers = new Map();
 var jobProduction = new Map();
 var varNametoDisplayName = new Map();
 var jobMultipliers = new Map();
 var storyFlags = new Map();
+var miscMultipliers = new Map();
+var jobConsumption = new Map();
+var buildingCost = new Map();
 
 //On load function
 function generateMain() {
@@ -43,19 +46,27 @@ function initNewGameVar() {
         //resource display
         ["foodDisplay", document.getElementById("foodDisplay")],
         ["rabbitsDisplay", document.getElementById("rabbitsDisplay")],
+        ["housingDisplay", document.getElementById("housingDisplay")],
+        ["housingDisplayBox", document.getElementById("housingDisplayBox")],
+
     ]);
 
     resources.set("food", 50);
     resources.set("rabbits", 1);
+    resources.set("housing", 10);
+    resources.set("wood", 0);
    
     jobs.set("unemployed", 1);
     jobs.set("rabbits", 1);
     jobs.set("cityScavenge", 0);
     jobs.set("cityRecruit", 0);
+    jobs.set("woodGatherer", 0);
+
 
     jobProduction.set("cityScavenge", new Map([["food", .05]]));
     jobProduction.set("rabbits", new Map([["food", -.01]]));
     jobProduction.set("cityRecruit", new Map([["rabbits", .1]]));
+    jobProduction.set("woodGatherer", new Map([["wood", .03]]));
 
     jobMultipliers.set("cityScavenge", new Map());
 
@@ -70,14 +81,28 @@ function initNewGameVar() {
     varNametoDisplayName.set("cityScavenge", "Scavenge");
     varNametoDisplayName.set("cityRecruit", "Recruit");
 
+    //defining multipliers
+    miscMultipliers.set("housing", 1);
+
     storyFlags.set("recruit", false);
+    storyFlags.set("recruit2", false);
+    storyFlags.set("breed", false);
+    storyFlags.set("housing", false);
 }
 
 
 
 function gameTick() {
 
-    //current order is jobs>jobproduction>jobmultipliers>resources>multipliers
+    
+    
+
+    //current order is variableMultipliers>jobs>jobproduction>jobmultipliers>resources>multipliers
+    if (resources.get("rabbits") > resources.get("housing") && storyFlags.get("housing")) {
+        const multi = miscMultipliers.get("housing")/Math.pow(1.1,resources.get("rabbits")-resources.get("housing"));
+        setResourceMultiplier("rabbits", "housing", multi);
+    }
+
     //job production
     //for every job, multiply it's production by amount of workers
     for (let [job, valuemap] of jobProduction) {
@@ -101,6 +126,14 @@ function gameTick() {
         for (let [key2, value2] of value) {
             sum += value2;
         }
+        if (resourceMultipliers.has(key)) {
+            let multi = 1;
+            for (let [source, multiplier] of value) {
+                multi = multi * multiplier;
+            }
+            sum *= multi;
+        }
+        
         productionSecond.set(key, sum*10);
         changeResource(key, sum);
     }
@@ -111,24 +144,54 @@ function gameTick() {
         displayProduction();   
     }
     //update rabbits and unemployment
+    if (resources.get("food") < 0) {
+        resources.set("food", 0);
+        changeResource("rabbits",-resources.get("rabbits")*.5)
+    }
+    if (resources.get("rabbits") < 1) {
+        resources.set("rabbits", 1);
+    }
     jobs.set("rabbits", round(resources.get("rabbits"), 0))
     let sum = 0;
     for (let [job, value] of jobs) {
         if (job != "rabbits" && job != "unemployed") {
             sum += value;
+            if (sum > jobs.get("rabbits")) {
+                const diff = sum - jobs.get("rabbits");
+                sum -= diff;
+                value -= diff;
+            }
         }
     }
     jobs.set("unemployed", jobs.get("rabbits") - sum);
-
+    
     storyChecks();
     tick++;
 }
 
+//story progress
 function storyChecks() {
     if (storyFlags.get("recruit") == false && resources.get("food") > 50) {
         storyFlags.set("recruit", true);
-        elements.get("cityRecruitArea").style.display = "inline-block";
         addLog("Maybe more rabbits will join if there is more food...")
+        changeResource("rabbits", 1);
+    }
+    if (storyFlags.get("recruit2") == false && resources.get("food") > 55) {
+        storyFlags.set("recruit2", true);
+        addLog("If there are enough rabbits, they might start breeding")
+        changeResource("rabbits", 1);
+    }
+    if (storyFlags.get("breed") == false && resources.get("food") > 60) {
+        storyFlags.set("breed", true);
+        addLog("The rabbits have started breeding, they breed faster if they are not assigned to a task");
+        changeResource("rabbits", 1);
+        setJobProduction("rabbits", "rabbits", .01);
+        setJobProduction("unemployed", "rabbits", .05);
+    }
+    if (storyFlags.get("housing") == false && resources.get("rabbits") >= resources.get("housing")) {
+        storyFlags.set("housing", true);
+        elements.get("housingDisplayBox").style.display = "inline-block";
+        addLog("Rabbits need a place to live, without enough housing, population growth recieves a soft cap");
     }
 }
 
@@ -137,6 +200,7 @@ function storyChecks() {
 function displayResources() {
     elements.get("foodDisplay").textContent = round(resources.get("food"), 2);
     elements.get("rabbitsDisplay").textContent = round(jobs.get("unemployed"), 0) + "/" + round(resources.get("rabbits"), 0);
+    elements.get("housingDisplay").textContent = round(jobs.get("rabbits"), 0) + "/" + round(resources.get("housing"), 0);
 
 
 }
@@ -262,9 +326,57 @@ function incrementJobs(job, amount) {
 }
 
 function setProduction(resource, source, amount, increment) {
-    if (increment) {
-        production.set(resource, production.get(resource).set(source, production.get(resource) + amount));
+    if (!production.has(resource)) {
+        production.set(resource, new Map([[source, amount]]));
+        console.log("New resource ' " + resource + " ' added to production")
     } else {
-        production.set(resource, production.get(resource).set(source, amount));
+        if (increment) {
+            production.set(resource, production.get(resource).set(source, production.get(resource) + amount));
+        } else {
+            production.set(resource, production.get(resource).set(source, amount));
+        }
     }
+}
+
+function setJobProduction(job, resource, amount, increment) {
+    if (!jobProduction.has(job)) {
+        jobProduction.set(job, new Map([[job, resource]]));
+        console.log("New job ' " + job + " ' added to jobProduction")
+    } else {
+        if (increment) {
+            jobProduction.set(job, jobProduction.get(job).set(resource, jobProduction.get(resource) + amount));
+        } else {
+            jobProduction.set(job, jobProduction.get(job).set(resource, amount));
+        }
+    }
+}
+
+function setJobMultiplier(job, source, multiplier, increment) {
+    if (!jobMultipliers.has(job)) {
+        jobMultipliers.set(job, new Map([[source, multiplier]]));
+        console.log("New job ' " + job + " ' added to jobMultipliers")
+    } else {
+        if (increment) {
+            jobMultipliers.set(job, jobMultipliers.get(job).set(source, jobMultipliers.get(source) + multiplier));
+        } else {
+            jobMultipliers.set(job, jobMultipliers.get(job).set(source, multiplier));
+        }
+    }
+}
+
+function setResourceMultiplier(resource, source, multiplier, increment) {
+    if (!resourceMultipliers.has(resource)) {
+        resourceMultipliers.set(resource, new Map([[source, multiplier]]));
+        console.log("New resource ' " + resource + " ' added to resourceMultipliers")
+    } else {
+        if (increment) {
+            resourceMultipliers.set(resource, resourceMultipliers.get(resource).set(source, resourceMultipliers.get(source) + multiplier));
+        } else {
+            resourceMultipliers.set(resource, resourceMultipliers.get(resource).set(source, multiplier));
+        }
+    }
+}
+
+function build(building, amount) {
+    
 }

@@ -17,7 +17,6 @@
 </head>
 <body onload="generateMain()">
     <header>Welcome to Rabbits Game <br />A Kittens Game Inspired Incremental</header>
-    <div class="toolTip">test<span class="toolTipText">text</span></div>
     <div>
         <div id="resourceDisplay">
             <header>Resources</header>
@@ -25,6 +24,8 @@
                 <tbody>
                     <tr><td>Food</td><td id="foodDisplay"></td></tr>
                     <tr><td>Rabbits</td><td id="rabbitsDisplay"></td></tr>
+                    <tr id="housingDisplayBox" style="display: none;"><td>Housing</td><td id="housingDisplay"></td></tr>
+                    <tr><td>Wood</td><td id="woodDisplay"></td></tr>
                 </tbody>
             </table>
         </div>
@@ -36,7 +37,11 @@
                 <input class="navButton" type="button" value="Settings" onclick="showSettings()" />
             </nav>
             <div id="campWindow">
-                <p>Test</p>
+                <div class="incrementArea" id="woodGathererArea">
+                    <div class="incrementLabel" id="woodGathererLabel">Gather Wood (0)</div>
+                    <input class="incrementButton" type="button" value="-" onclick="incrementJobs('woodGatherer',-1)" />
+                    <input class="incrementButton" type="button" value="+" onclick="incrementJobs('woodGatherer',1)" />
+                </div>
             </div>
             <div id="cityWindow">
                 <div class="incrementArea" id="cityScavengeArea">
