@@ -2,6 +2,10 @@ var resources = new Map();
 var jobs = new Map();
 var elements = new Map();
 var production = new Map();
+var productionSecond = new Map();
+var tick = 0;
+var ResourceMultipliers = new Map();
+var jobProduction = new Map();
 
 //On load function
 function generateMain() {
@@ -20,12 +24,18 @@ function newGame() {
 //reset variables
 function initNewGameVar() {
     elements = new Map([
+        //navigator
         ["campWindow", document.getElementById("campWindow")],
         ["storyWindow", document.getElementById("storyWindow")],
         ["settingsWindow", document.getElementById("settingsWindow")],
         ["cityWindow", document.getElementById("cityWindow")],
+        //story
         ["storyBox", document.getElementById("storyBox")],
+        //city
         ["cityScavengeLabel", document.getElementById("cityScavengeLabel")],
+        //resource display
+        ["dogFoodDisplay", document.getElementById("dogFoodDisplay")],
+        ["puppiesDisplay", document.getElementById("puppiesDisplay")],
     ]);
 
     resources.set("dogFood", 0);
@@ -34,23 +44,64 @@ function initNewGameVar() {
     jobs.set("cityScavenge", 0);
     jobs.set("unemployed", 1);
 
+    jobProduction.set("cityScavenge", new Map());
+    jobProduction.get("cityScavenge").set("dogFood")
+
     production.set("dogFood", new Map());
 }
 
 //update resource display
 function displayResources() {
-    document.getElementById("dogFoodDisplay").textContent = resources.get("dogFood");
-    document.getElementById("puppiesDisplay").textContent = jobs.get("unemployed") + "/" + resources.get("puppies");
+    elements.get("dogFoodDisplay").textContent = round(resources.get("dogFood"), 2);   
+    elements.get("puppiesDisplay").textContent = round(jobs.get("unemployed"), 0) + "/" + round(resources.get("puppies"), 0);
+
+
+}
+
+function round(value, decimal) {
+    return Math.floor(value * Math.pow(10, decimal)) / Math.pow(10, decimal);
+}
+
+function displayProduction() {
+    elements.get("dogFoodDisplay").title = productionString("dogFood",3);
+}
+
+function productionString(resource, decimals) {
+    const value = productionSecond.get(resource);
+    console.log(value);
+    console.log(round(value, decimals))
+    if (round(value, decimals) != value) {
+        return "+" + round(value, decimals) + ".../s";
+    } else {
+        return "+" + round(value, decimals) + "/s";
+    }
 }
 
 function gameTick() {
+
+    //current order is jobs>jobproduction>jobmultipliers>resources>multipliers
+    //job production
+    for (let [key, value] of jobProduction) {
+
+    }
+
     //for every resource in production
     for (let [key, value] of production) {
         //for every source of production
+        let sum = 0;
         for (let [key2, value2] of value) {
-            changeResource(key, value2);
+            sum += value2;
         }
+        productionSecond.set(key, sum*10);
+        changeResource(key, sum);
     }
+    if (tick % 3 == 0) {
+        displayResources();
+    }
+    if (tick % 10 == 0) {
+        displayProduction();   
+    }
+    tick++;
 }
 
 //show camp tab
@@ -121,7 +172,7 @@ function changeCityScavenge(amount) {
         changeJobs("cityScavenge", amount);
         changeJobs("unemployed", -amount );
         elements.get("cityScavengeLabel").textContent = "Scavenge (" + jobs.get("cityScavenge") + ")";
-        setProduction("dogFood", "cityScavenge", jobs.get("cityScavenge"));
+        setProduction("dogFood", "cityScavenge", jobs.get("cityScavenge")*.01);
     }   
 }
 

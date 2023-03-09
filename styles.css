@@ -65,3 +65,36 @@ table td{
     width: 40%;
     border:1px solid black;
 }
+
+.toolTip:hover .toolTipText {
+    display:block;
+}
+
+.toolTip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+}
+
+.toolTipText {
+    display: none;
+    position: absolute;
+    z-index: 100;
+    border: 1px;
+    background-color: white;
+    border-style: solid;
+    border-width: 1px;
+    border-color: red;
+    padding: 3px;
+    color: red;
+    top: 20px;
+    left: 20px;
+}
+
+
+    
+
+
+
+
+

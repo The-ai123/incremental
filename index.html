@@ -17,6 +17,7 @@
 </head>
 <body onload="generateMain()">
     <header>Welcome to Puppies Game <br />A Kittens Game Inspired Incremental</header>
+    <div class="toolTip">test<span class="toolTipText">text</span></div>
     <div>
         <div id="resourceDisplay">
             <header>Resources</header>
@@ -38,7 +39,7 @@
                 <p>Test</p>
             </div>
             <div id="cityWindow">
-                <div class="incrementArea">
+                <div class="incrementArea" title=".01 Dog Food/Second">
                     <div class="incrementLabel" id="cityScavengeLabel">Scavenge (0)</div>
                     <input class="incrementButton" type="button" value="-" onclick="changeCityScavenge(-1)" />
                     <input class="incrementButton" type="button" value="+" onclick="changeCityScavenge(1)" />
