@@ -6,6 +6,7 @@ var production = new Map();
 //On load function
 function generateMain() {
     newGame();
+    const intervalID = setInterval(gameTick, 100);
 }
 
 //Starts a new game
@@ -24,11 +25,16 @@ function initNewGameVar() {
         ["settingsWindow", document.getElementById("settingsWindow")],
         ["cityWindow", document.getElementById("cityWindow")],
         ["storyBox", document.getElementById("storyBox")],
+        ["cityScavengeLabel", document.getElementById("cityScavengeLabel")],
     ]);
+
     resources.set("dogFood", 0);
     resources.set("puppies", 1);
+
     jobs.set("cityScavenge", 0);
     jobs.set("unemployed", 1);
+
+    production.set("dogFood", new Map());
 }
 
 //update resource display
@@ -38,7 +44,13 @@ function displayResources() {
 }
 
 function gameTick() {
-
+    //for every resource in production
+    for (let [key, value] of production) {
+        //for every source of production
+        for (let [key2, value2] of value) {
+            changeResource(key, value2);
+        }
+    }
 }
 
 //show camp tab
@@ -108,7 +120,15 @@ function changeCityScavenge(amount) {
     if (jobs.get("cityScavenge") >= -1*amount && jobs.get("unemployed") >= amount){
         changeJobs("cityScavenge", amount);
         changeJobs("unemployed", -amount );
-        document.getElementById("cityScavengeLabel").textContent = "Scavenge (" + jobs.get("cityScavenge") + ")";
+        elements.get("cityScavengeLabel").textContent = "Scavenge (" + jobs.get("cityScavenge") + ")";
+        setProduction("dogFood", "cityScavenge", jobs.get("cityScavenge"));
+    }   
+}
+
+function setProduction(resource, source, amount, increment) {
+    if (increment) {
+        production.set(resource, production.get(resource).set(source, production.get(resource) + amount));
+    } else {
+        production.set(resource, production.get(resource).set(source, amount));
     }
-    
 }
