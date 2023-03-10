@@ -42,6 +42,7 @@ function initNewGameVar() {
         //camp
         ["woodGathererLabel", document.getElementById("woodGathererLabel")],
         ["houseArea", document.getElementById("houseArea")],
+        ["houseLabel", document.getElementById("houseLabel")],
         //city
         ["cityScavengeLabel", document.getElementById("cityScavengeLabel")],
         ["cityScavengeArea", document.getElementById("cityScavengeArea")],
@@ -87,11 +88,12 @@ function initNewGameVar() {
     varNametoDisplayName.set("cityRecruit", "Recruit");
     varNametoDisplayName.set("wood", "Wood");
     varNametoDisplayName.set("woodGatherer", "Gather Wood");
+    varNametoDisplayName.set("house", "Build House");
 
     //defining multipliers
     miscMultipliers.set("housing", 1);
 
-    buildingCost.set("house",new Map([["wood",]]));
+    buildingCost.set("house",new Map([["wood",5]]));
 
     storyFlags.set("recruit", false);
     storyFlags.set("recruit2", false);
@@ -405,7 +407,11 @@ function build(building, amount) {
             }
         }
         if (ok) {
-
+            buildings.set(building, buildings.get(building) + amount);
+            for (let [resource, key] of buildingCost.get(building)) {
+                changeResource(resource, key);
+            }
+            elements.get(building + "Label").textContent = varNametoDisplayName.get(building) + " (" + buildings.get(building) + ")"; 
         }
     }
 
