@@ -12,6 +12,7 @@ var storyFlags = new Map();
 var miscMultipliers = new Map();
 var jobConsumption = new Map();
 var buildingCost = new Map();
+var buildings = new Map();
 
 //On load function
 function generateMain() {
@@ -38,6 +39,9 @@ function initNewGameVar() {
         ["storyNav", document.getElementById("storyNav")],
         //story
         ["storyBox", document.getElementById("storyBox")],
+        //camp
+        ["woodGathererLabel", document.getElementById("woodGathererLabel")],
+        ["houseArea", document.getElementById("houseArea")],
         //city
         ["cityScavengeLabel", document.getElementById("cityScavengeLabel")],
         ["cityScavengeArea", document.getElementById("cityScavengeArea")],
@@ -48,6 +52,7 @@ function initNewGameVar() {
         ["rabbitsDisplay", document.getElementById("rabbitsDisplay")],
         ["housingDisplay", document.getElementById("housingDisplay")],
         ["housingDisplayBox", document.getElementById("housingDisplayBox")],
+        ["woodDisplay", document.getElementById("woodDisplay")],
 
     ]);
 
@@ -80,9 +85,13 @@ function initNewGameVar() {
     //job real names
     varNametoDisplayName.set("cityScavenge", "Scavenge");
     varNametoDisplayName.set("cityRecruit", "Recruit");
+    varNametoDisplayName.set("wood", "Wood");
+    varNametoDisplayName.set("woodGatherer", "Gather Wood");
 
     //defining multipliers
     miscMultipliers.set("housing", 1);
+
+    buildingCost.set("house",new Map([["wood",]]));
 
     storyFlags.set("recruit", false);
     storyFlags.set("recruit2", false);
@@ -99,8 +108,10 @@ function gameTick() {
 
     //current order is variableMultipliers>jobs>jobproduction>jobmultipliers>resources>multipliers
     if (resources.get("rabbits") > resources.get("housing") && storyFlags.get("housing")) {
-        const multi = miscMultipliers.get("housing")/Math.pow(1.1,resources.get("rabbits")-resources.get("housing"));
+        const multi = miscMultipliers.get("housing") * Math.pow(.9, resources.get("rabbits") - resources.get("housing"));
         setResourceMultiplier("rabbits", "housing", multi);
+    } else {
+        setResourceMultiplier("rabbits", "housing", 1);
     }
 
     //job production
@@ -128,10 +139,10 @@ function gameTick() {
         }
         if (resourceMultipliers.has(key)) {
             let multi = 1;
-            for (let [source, multiplier] of value) {
+            for (let [source, multiplier] of resourceMultipliers.get(key)) {
                 multi = multi * multiplier;
             }
-            sum *= multi;
+            sum = sum * multi;
         }
         
         productionSecond.set(key, sum*10);
@@ -140,7 +151,7 @@ function gameTick() {
     if (tick % 3 == 0) {
         displayResources();
     }
-    if (tick % 10 == 0) {
+    if (tick % 50 == 0) {
         displayProduction();   
     }
     //update rabbits and unemployment
@@ -190,7 +201,8 @@ function storyChecks() {
     }
     if (storyFlags.get("housing") == false && resources.get("rabbits") >= resources.get("housing")) {
         storyFlags.set("housing", true);
-        elements.get("housingDisplayBox").style.display = "inline-block";
+        elements.get("housingDisplayBox").style.display = "";
+        elements.get("houseArea").style.display = "inline-block";
         addLog("Rabbits need a place to live, without enough housing, population growth recieves a soft cap");
     }
 }
@@ -201,6 +213,7 @@ function displayResources() {
     elements.get("foodDisplay").textContent = round(resources.get("food"), 2);
     elements.get("rabbitsDisplay").textContent = round(jobs.get("unemployed"), 0) + "/" + round(resources.get("rabbits"), 0);
     elements.get("housingDisplay").textContent = round(jobs.get("rabbits"), 0) + "/" + round(resources.get("housing"), 0);
+    elements.get("woodDisplay").textContent = round(resources.get("wood"), 2);
 
 
 }
@@ -213,6 +226,8 @@ function round(value, decimal) {
 //update production tooltips
 function displayProduction() {
     elements.get("foodDisplay").title = productionString("food", 3);
+    elements.get("rabbitsDisplay").title = productionString("rabbits", 3);
+    elements.get("woodDisplay").title = productionString("wood", 3);
     elements.get("cityScavengeArea").title = jobProductionString("cityScavenge");
 }
 
@@ -220,7 +235,7 @@ function displayProduction() {
 function jobProductionString(jobName) {
     let string = ""
     for (let [resource, value] of jobProduction.get(jobName)) {
-        string += value + " " + varNametoDisplayName.get(resource) + "/sec\n";
+        string += (value*10) + " " + varNametoDisplayName.get(resource) + "/sec\n";
     }
     return string;
 }
@@ -229,9 +244,9 @@ function jobProductionString(jobName) {
 function productionString(resource, decimals) {
     let value = productionSecond.get(resource);
     let prefix = "";
-    if (value > 0) {
+    if (value >= 0) {
         prefix = "+"
-    } else {
+    } else{
         prefix = "-"
         value = -value;
     }
@@ -340,7 +355,7 @@ function setProduction(resource, source, amount, increment) {
 
 function setJobProduction(job, resource, amount, increment) {
     if (!jobProduction.has(job)) {
-        jobProduction.set(job, new Map([[job, resource]]));
+        jobProduction.set(job, new Map([[resource, amount]]));
         console.log("New job ' " + job + " ' added to jobProduction")
     } else {
         if (increment) {
@@ -378,5 +393,20 @@ function setResourceMultiplier(resource, source, multiplier, increment) {
 }
 
 function build(building, amount) {
-    
+    if (!buildings.has(building)){
+        buildings.set(building, 0);
+        console.log("New building ' " + building + " ' added to buildings")//in case I misspell something
+    }
+    if (buildings.get(building) >= -amount) {
+        let ok = true;
+        for (let [resource, key] of buildingCost.get(building)) {
+            if (resources.get(resource) < key) {
+                ok = false;//potential time save if loop terminates here
+            }
+        }
+        if (ok) {
+
+        }
+    }
+
 }
